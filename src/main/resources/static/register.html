@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - 도토리 플래너</title>
+    <meta name="description" content="도토리 플래너 회원가입 페이지입니다.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="회원가입 - 도토리 플래너">
+    <meta property="og:description" content="지금 도토리 플래너에 가입하고 체계적인 예산 관리를 시작해보세요.">
+    <meta property="og:image" content="/images/dotori_main.png">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f3f0eb;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        /* Background Animation */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -100px;
+            left: -100px;
+            width: 400px;
+            height: 400px;
+            background: #dcedc8;
+            border-radius: 50%;
+            opacity: 0.3;
+            filter: blur(60px);
+            animation: blob-bounce 20s infinite ease;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -50px;
+            right: -50px;
+            width: 300px;
+            height: 300px;
+            background: #ffe0b2;
+            border-radius: 50%;
+            opacity: 0.3;
+            filter: blur(60px);
+            animation: blob-bounce 20s infinite ease;
+            animation-delay: -5s;
+        }
+
+        @keyframes blob-bounce {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(30px, -50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+        }
+
+        .register-container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(139, 69, 19, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(62, 39, 35, 0.15);
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 420px;
+            animation: slideUp 0.5s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .register-header h1 {
+            color: #6b4f3f;
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .register-header p {
+            color: #795548;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #3e2723;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid rgba(139, 69, 19, 0.2);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #fcfcfc;
+            color: #3e2723;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #558b2f;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(85, 139, 47, 0.1);
+        }
+
+        .form-group input.valid {
+            border-color: #558b2f;
+        }
+
+        .form-group input.invalid {
+            border-color: #d84315;
+        }
+
+        .validation-message {
+            font-size: 12px;
+            margin-top: 5px;
+            min-height: 18px;
+        }
+
+        .validation-message.success {
+            color: #558b2f;
+        }
+
+        .validation-message.error {
+            color: #d84315;
+        }
+
+        .error-message,
+        .success-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error-message {
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            color: #d84315;
+        }
+
+        .success-message {
+            background: #f1f8e9;
+            border: 1px solid #c5e1a5;
+            color: #558b2f;
+        }
+
+        .error-message.show,
+        .success-message.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 16px;
+            background: #558b2f;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(85, 139, 47, 0.3);
+        }
+
+        .btn-register:hover:not(:disabled) {
+            background: #33691e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(85, 139, 47, 0.4);
+        }
+
+        .btn-register:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-register:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 25px;
+            color: #795548;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #558b2f;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .login-link a:hover {
+            color: #33691e;
+            text-decoration: underline;
+        }
+
+        .acorn-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .password-strength {
+            height: 4px;
+            background: rgba(139, 69, 19, 0.1);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .password-strength-bar.weak {
+            width: 33%;
+            background: #d84315;
+        }
+
+        .password-strength-bar.medium {
+            width: 66%;
+            background: #fdd835;
+        }
+
+        .password-strength-bar.strong {
+            width: 100%;
+            background: #558b2f;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="register-container">
+        <div class="register-header">
+            <a href="/home" style="text-decoration: none; color: inherit; display: inline-block;">
+                <img src="/images/dotori_main.png" alt="도토리 플래너"
+                    style="width: 100px; height: auto; margin-bottom: 15px;">
+                <h1 data-i18n="app-name">도토리 플래너</h1>
+            </a>
+            <p data-i18n="register-subtitle">새 계정을 만들어 시작하세요</p>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username" data-i18n="username-label">사용자 이름</label>
+                <input type="text" id="username" name="username" required autocomplete="username">
+                <div id="usernameValidation" class="validation-message"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="email" data-i18n="email-label">이메일</label>
+                <input type="email" id="email" name="email" required autocomplete="email">
+                <div id="emailValidation" class="validation-message"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="password" data-i18n="password-label">비밀번호 (최소 6자)</label>
+                <input type="password" id="password" name="password" required autocomplete="new-password">
+                <div class="password-strength">
+                    <div id="passwordStrengthBar" class="password-strength-bar"></div>
+                </div>
+                <div id="passwordValidation" class="validation-message"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword" data-i18n="confirm-password-label">비밀번호 확인</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password">
+                <div id="confirmPasswordValidation" class="validation-message"></div>
+            </div>
+
+            <button type="submit" class="btn-register" id="submitBtn" data-i18n="register-button">회원가입</button>
+        </form>
+
+        <div class="login-link">
+            <span data-i18n="have-account">이미 계정이 있으신가요?</span> <a href="/login" data-i18n="login">로그인</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('registerForm');
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const submitBtn = document.getElementById('submitBtn');
+
+        let usernameValid = false;
+        let emailValid = false;
+        let passwordValid = false;
+        let confirmPasswordValid = false;
+
+        // Username validation
+        let usernameTimeout;
+        usernameInput.addEventListener('input', function () {
+            clearTimeout(usernameTimeout);
+            const username = this.value.trim();
+            const validation = document.getElementById('usernameValidation');
+
+            if (username.length === 0) {
+                this.classList.remove('valid', 'invalid');
+                validation.textContent = '';
+                validation.className = 'validation-message';
+                usernameValid = false;
+                updateSubmitButton();
+                return;
+            }
+
+            usernameTimeout = setTimeout(() => {
+                fetch(`/api/auth/check-username?username=${encodeURIComponent(username)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.available) {
+                            usernameInput.classList.remove('invalid');
+                            usernameInput.classList.add('valid');
+                            validation.textContent = window.i18n ? window.i18n.t('validation-username-available') : '사용 가능한 사용자 이름입니다.';
+                            validation.className = 'validation-message success';
+                            usernameValid = true;
+                        } else {
+                            usernameInput.classList.remove('valid');
+                            usernameInput.classList.add('invalid');
+                            validation.textContent = window.i18n ? window.i18n.t('validation-username-taken') : '이미 사용 중인 사용자 이름입니다.';
+                            validation.className = 'validation-message error';
+                            usernameValid = false;
+                        }
+                        updateSubmitButton();
+                    })
+                    .catch(err => {
+                        console.error('Username check failed:', err);
+                    });
+            }, 500);
+        });
+
+        // Email validation
+        let emailTimeout;
+        emailInput.addEventListener('input', function () {
+            clearTimeout(emailTimeout);
+            const email = this.value.trim();
+            const validation = document.getElementById('emailValidation');
+
+            if (!email.includes('@') || email.length < 5) {
+                this.classList.remove('valid');
+                this.classList.add('invalid');
+                validation.textContent = window.i18n ? window.i18n.t('validation-email-invalid') : '유효한 이메일 주소를 입력하세요.';
+                validation.className = 'validation-message error';
+                emailValid = false;
+                updateSubmitButton();
+                return;
+            }
+
+            emailTimeout = setTimeout(() => {
+                fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.available) {
+                            emailInput.classList.remove('invalid');
+                            emailInput.classList.add('valid');
+                            validation.textContent = window.i18n ? window.i18n.t('validation-email-available') : '사용 가능한 이메일입니다.';
+                            validation.className = 'validation-message success';
+                            emailValid = true;
+                        } else {
+                            emailInput.classList.remove('valid');
+                            emailInput.classList.add('invalid');
+                            validation.textContent = window.i18n ? window.i18n.t('validation-email-taken') : '이미 사용 중인 이메일입니다.';
+                            validation.className = 'validation-message error';
+                            emailValid = false;
+                        }
+                        updateSubmitButton();
+                    })
+                    .catch(err => {
+                        console.error('Email check failed:', err);
+                    });
+            }, 500);
+        });
+
+        // Password strength
+        passwordInput.addEventListener('input', function () {
+            const password = this.value;
+            const validation = document.getElementById('passwordValidation');
+            const strengthBar = document.getElementById('passwordStrengthBar');
+
+            if (password.length < 6) {
+                this.classList.remove('valid');
+                this.classList.add('invalid');
+                validation.textContent = window.i18n ? window.i18n.t('validation-password-short') : '비밀번호는 최소 6자 이상이어야 합니다.';
+                validation.className = 'validation-message error';
+                strengthBar.className = 'password-strength-bar';
+                passwordValid = false;
+            } else {
+                this.classList.remove('invalid');
+                this.classList.add('valid');
+
+                // Calculate strength
+                let strength = 0;
+                if (password.length >= 8) strength++;
+                if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+                if (/\d/.test(password)) strength++;
+                if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+                if (strength <= 1) {
+                    strengthBar.className = 'password-strength-bar weak';
+                    validation.textContent = window.i18n ? window.i18n.t('password-strength-weak') : '약한 비밀번호';
+                    validation.className = 'validation-message error';
+                } else if (strength <= 2) {
+                    strengthBar.className = 'password-strength-bar medium';
+                    validation.textContent = window.i18n ? window.i18n.t('password-strength-medium') : '보통 비밀번호';
+                    validation.className = 'validation-message';
+                } else {
+                    strengthBar.className = 'password-strength-bar strong';
+                    validation.textContent = window.i18n ? window.i18n.t('password-strength-strong') : '강한 비밀번호';
+                    validation.className = 'validation-message success';
+                }
+
+                passwordValid = true;
+            }
+
+            // Re-validate confirm password
+            if (confirmPasswordInput.value) {
+                confirmPasswordInput.dispatchEvent(new Event('input'));
+            }
+
+            updateSubmitButton();
+        });
+
+        // Confirm password validation
+        confirmPasswordInput.addEventListener('input', function () {
+            const validation = document.getElementById('confirmPasswordValidation');
+
+            if (this.value !== passwordInput.value) {
+                this.classList.remove('valid');
+                this.classList.add('invalid');
+                validation.textContent = window.i18n ? window.i18n.t('validation-password-match') : '비밀번호가 일치하지 않습니다.';
+                validation.className = 'validation-message error';
+                confirmPasswordValid = false;
+            } else if (this.value.length > 0) {
+                this.classList.remove('invalid');
+                this.classList.add('valid');
+                validation.textContent = '비밀번호가 일치합니다.';
+                validation.className = 'validation-message success';
+                confirmPasswordValid = true;
+            } else {
+                this.classList.remove('valid', 'invalid');
+                validation.textContent = '';
+                confirmPasswordValid = false;
+            }
+
+            updateSubmitButton();
+        });
+
+        function updateSubmitButton() {
+            submitBtn.disabled = !(usernameValid && emailValid && passwordValid && confirmPasswordValid);
+        }
+
+        // Form submission
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            if (!usernameValid || !emailValid || !passwordValid || !confirmPasswordValid) {
+                showError('모든 필드를 올바르게 입력해주세요.');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '처리 중...';
+
+            const formData = {
+                username: usernameInput.value.trim(),
+                email: emailInput.value.trim(),
+                password: passwordInput.value
+            };
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess(data.message || '회원가입이 완료되었습니다!');
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    showError(data.message || '회원가입에 실패했습니다.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '회원가입';
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showError('서버 오류가 발생했습니다. 다시 시도해주세요.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '회원가입';
+            }
+        });
+
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMessage');
+            const successMsg = document.getElementById('successMessage');
+            successMsg.classList.remove('show');
+            errorMsg.textContent = message;
+            errorMsg.classList.add('show');
+        }
+
+        function showSuccess(message) {
+            const errorMsg = document.getElementById('errorMessage');
+            const successMsg = document.getElementById('successMessage');
+            errorMsg.classList.remove('show');
+            successMsg.textContent = message;
+            successMsg.classList.add('show');
+        }
+    </script>
+    <script src="/i18n.js"></script>
+</body>
+
+</html>

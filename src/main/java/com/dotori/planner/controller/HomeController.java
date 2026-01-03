@@ -1,0 +1,43 @@
+package com.dotori.planner.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class HomeController {
+
+    @GetMapping("/")
+    public String root() {
+        return "forward:/home.html";
+    }
+
+    @GetMapping("/home")
+    public String home() {
+        return "forward:/home.html";
+    }
+
+    @GetMapping("/login")
+    public String login() {
+        return "forward:/login.html";
+    }
+
+    @GetMapping("/register")
+    public String register() {
+        return "forward:/register.html";
+    }
+
+    @GetMapping("/dashboard")
+    public String dashboard() {
+        return "forward:/index.html";
+    }
+
+    @GetMapping("/privacy")
+    public String privacy() {
+        return "forward:/privacy.html";
+    }
+
+    @GetMapping("/terms")
+    public String terms() {
+        return "forward:/terms.html";
+    }
+}

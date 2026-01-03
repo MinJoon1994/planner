@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도토리 플래너 - 똑똑한 예산 관리</title>
+
+    <!-- SEO & Open Graph -->
+    <meta name="description" content="매일매일 쌓이는 귀여운 지출 기록. 도토리 가계부로 예산을 계획하고 지출을 분석하여 현명한 소비 습관을 만들어보세요.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="도토리 플래너 - 똑똑한 예산 관리의 시작">
+    <meta property="og:description" content="간편한 지출 기록, 한눈에 보는 소비 흐름. 도토리와 함께 자산을 키워보세요.">
+    <meta property="og:image" content="/images/dotori_main.png">
+    <meta property="og:url" content="https://dotoriplanner.p-e.kr/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="/manifest.json?v=2">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #6b4f3f;
+            --accent-color: #558b2f;
+            --bg-color: #f3f0eb;
+            --text-primary: #3e2723;
+            --text-secondary: #795548;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .language-selector {
+            position: relative;
+        }
+
+        .language-btn {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            padding: 0 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            height: 46px;
+            line-height: 1;
+        }
+
+        .language-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: none;
+            min-width: 150px;
+            z-index: 1000;
+        }
+
+        .language-dropdown.show {
+            display: block;
+        }
+
+        .language-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .language-option:hover {
+            background: var(--bg-color);
+        }
+
+        .language-option.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn {
+            padding: 0 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            height: 46px;
+            line-height: 1;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(85, 139, 47, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #33691e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(85, 139, 47, 0.4);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 150px 2rem 100px;
+            text-align: center;
+            background: linear-gradient(135deg, #f3f0eb 0%, #dcedc8 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 400px;
+            height: 400px;
+            background: rgba(85, 139, 47, 0.1);
+            border-radius: 50%;
+            filter: blur(80px);
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-large {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 3rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+            border-color: var(--accent-color);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* CTA Section */
+        .cta {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #8d6e63 100%);
+            color: white;
+            padding: 80px 2rem;
+            text-align: center;
+        }
+
+        .cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .btn-white {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .btn-white:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary-color);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        footer p {
+            opacity: 0.8;
+        }
+
+        /* Mobile Header & Sidebar */
+        .desktop-header {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .mobile-header {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            padding: 0 1.5rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-logo-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* Mobile Sidebar Drawer */
+        .mobile-sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+            backdrop-filter: blur(2px);
+        }
+
+        .mobile-sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            height: 100%;
+            background: white;
+            z-index: 1002;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+        }
+
+        .mobile-sidebar.active {
+            left: 0;
+        }
+
+        .mobile-sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+
+        .mobile-sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .mobile-lang-section {
+            margin-bottom: 2rem;
+        }
+
+        .mobile-lang-section h4 {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .mobile-lang-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .mobile-lang-btn {
+            padding: 0.8rem;
+            border: 1px solid #eee;
+            background: #f9f9f9;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .mobile-lang-btn:hover,
+        .mobile-lang-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .mobile-auth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        /* Footer Links */
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 900px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .hero {
+                padding: 120px 2rem 80px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .desktop-header {
+                display: none;
+            }
+
+            .mobile-header {
+                display: flex;
+            }
+
+            .hero {
+                padding: 100px 1.5rem 60px;
+                /* Adjusted for mobile header height */
+            }
+
+            .hero h1 {
+                font-size: 2.2rem;
+                margin-bottom: 1rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+                margin-bottom: 2rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                gap: 0.8rem;
+                width: 100%;
+                max-width: 320px;
+                margin: 0 auto;
+            }
+
+            .btn-large {
+                width: 100%;
+            }
+
+            .section-title {
+                font-size: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .features {
+                padding: 60px 1.5rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .feature-card {
+                padding: 2rem;
+            }
+
+            .cta {
+                padding: 60px 1.5rem;
+            }
+
+            .cta h2 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-container {
+                padding: 0 1rem;
+            }
+
+            .logo {
+                font-size: 1.4rem;
+            }
+
+            /* Hide language text on very small screens, keep icon */
+            #currentLang {
+                display: none;
+            }
+
+            .language-btn {
+                padding: 0 0.8rem;
+            }
+
+            .nav-buttons {
+                gap: 0.5rem;
+            }
+
+            .btn {
+                padding: 0 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <button id="mobile-menu-btn" class="icon-btn">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <a href="/home" class="mobile-logo-text">
+            <span data-i18n="app-name">도토리 플래너</span>
+        </a>
+        <div style="width: 24px;"></div>
+    </header>
+
+    <!-- Desktop Header -->
+    <header class="desktop-header">
+        <div class="header-container">
+            <a href="/home" class="logo">
+                <span data-i18n="app-name">도토리 플래너</span>
+            </a>
+            <div class="nav-buttons">
+                <div class="language-selector">
+                    <button class="language-btn" id="languageBtn">
+                        <span id="currentLang">🇰🇷 한국어</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="language-dropdown" id="languageDropdown">
+                        <div class="language-option" data-lang="ko">🇰🇷 한국어</div>
+                        <div class="language-option" data-lang="en">🇺🇸 English</div>
+                        <div class="language-option" data-lang="ja">🇯🇵 日本語</div>
+                        <div class="language-option" data-lang="zh">🇨🇳 中文</div>
+                    </div>
+                </div>
+                <div id="auth-buttons-header" style="display: flex; gap: 0.8rem;">
+                    <button id="btn-install-desktop" class="btn btn-primary" style="display: none; background: #333;">
+                        <i class="fa-solid fa-download"></i> <span style="margin-left:5px;">App 설치</span>
+                    </button>
+                    <a href="/login" class="btn btn-outline" data-i18n="login">로그인</a>
+                    <a href="/register" class="btn btn-primary" data-i18n="signup">회원가입</a>
+                </div>
+                <div id="dashboard-button-header" style="display: none;">
+                    <a href="/dashboard" class="btn btn-primary" data-i18n="go-dashboard">내 가계부로 이동</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-icon">
+                <img src="/images/dotori_main.png" alt="도토리 플래너" style="width: 180px; height: auto;">
+            </div>
+            <h1 data-i18n="hero-title">똑똑하게 모으는<br>당신의 도토리</h1>
+            <p data-i18n="hero-subtitle">월별 예산 관리부터 일일 지출 추적까지,<br>도토리 플래너와 함께 재정 목표를 달성하세요</p>
+            <div class="hero-buttons" id="auth-buttons-hero">
+                <button id="btn-install-hero" class="btn btn-primary btn-large"
+                    style="display: none; background: white; color: var(--accent-color); border: 2px solid var(--accent-color);">
+                    <i class="fa-solid fa-download"></i> <span style="margin-left:8px;">App 설치하기</span>
+                </button>
+                <a href="/register" class="btn btn-primary btn-large" data-i18n="get-started">무료로 시작하기</a>
+                <a href="/login" class="btn btn-outline btn-large" data-i18n="login">로그인</a>
+            </div>
+            <div class="hero-buttons" id="dashboard-button-hero" style="display: none;">
+                <a href="/dashboard" class="btn btn-primary btn-large" data-i18n="go-dashboard">내 가계부로 이동</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <h2 class="section-title" data-i18n="features-title">주요 기능</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                <h3 data-i18n="feature1-title">월별 예산 설정</h3>
+                <p data-i18n="feature1-desc">매월 수입과 고정 지출을 설정하여 실제 사용 가능한 예산을 자동으로 계산합니다.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-calendar-day"></i></div>
+                <h3 data-i18n="feature2-title">일일 권장 지출</h3>
+                <p data-i18n="feature2-desc">남은 예산과 일수를 고려하여 하루에 얼마를 쓸 수 있는지 실시간으로 알려드립니다.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                <h3 data-i18n="feature3-title">지출 분석</h3>
+                <p data-i18n="feature3-desc">카테고리별 지출 내역을 시각화하여 소비 패턴을 한눈에 파악할 수 있습니다.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-list-check"></i></div>
+                <h3 data-i18n="feature4-title">고정 지출 관리</h3>
+                <p data-i18n="feature4-desc">월세, 통신비 등 매월 반복되는 고정 지출을 등록하여 자동으로 예산에서 차감합니다.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                <h3 data-i18n="feature5-title">달력 뷰</h3>
+                <p data-i18n="feature5-desc">달력에서 일별 지출을 확인하고, 특정 날짜의 상세 내역을 쉽게 조회할 수 있습니다.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <h3 data-i18n="feature6-title">안전한 데이터</h3>
+                <p data-i18n="feature6-desc">개인별 계정으로 안전하게 관리되며, 언제 어디서나 접속하여 확인할 수 있습니다.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <h2 data-i18n="cta-title">지금 바로 시작하세요</h2>
+        <p data-i18n="cta-subtitle">무료로 가입하고 똑똑한 재정 관리를 경험해보세요</p>
+        <a href="/register.html" class="btn btn-white btn-large" data-i18n="cta-button">회원가입하기</a>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/privacy" data-i18n="footer-privacy">개인정보 처리방침</a>
+                <a href="#" style="opacity: 0.5; pointer-events: none;">|</a>
+                <a href="/terms" data-i18n="footer-terms">이용약관</a>
+            </div>
+            <p data-i18n="footer-copyright">&copy; 2026 도토리 플래너. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay"></div>
+    <div class="mobile-sidebar" id="mobileSidebar">
+        <div class="mobile-sidebar-header">
+            <span class="mobile-sidebar-title" data-i18n="menu">메뉴</span>
+            <button id="closeMobileSidebar" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="mobile-sidebar-content">
+            <div class="mobile-lang-section">
+                <h4 data-i18n="language">언어</h4>
+                <div class="mobile-lang-options">
+                    <button class="mobile-lang-btn" data-lang="ko">🇰🇷 한국어</button>
+                    <button class="mobile-lang-btn" data-lang="en">🇺🇸 English</button>
+                    <button class="mobile-lang-btn" data-lang="ja">🇯🇵 日本語</button>
+                    <button class="mobile-lang-btn" data-lang="zh">🇨🇳 中文</button>
+                </div>
+            </div>
+            <div class="mobile-auth-buttons">
+                <button id="btn-install-mobile" class="btn btn-primary full-width"
+                    style="display: none; background: #333; margin-bottom: 0.5rem;">
+                    <i class="fa-solid fa-download"></i> App 설치
+                </button>
+                <a href="/login" class="btn btn-outline full-width" data-i18n="login">로그인</a>
+                <a href="/register" class="btn btn-primary full-width" data-i18n="signup">회원가입</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/i18n.js"></script>
+    <script>
+        // PWA Logic for Home
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js');
+            });
+        }
+
+        let deferredPrompt;
+        const installBtns = [
+            document.getElementById('btn-install-desktop'),
+            document.getElementById('btn-install-mobile'),
+            document.getElementById('btn-install-hero')
+        ];
+
+        // 1. Capture event if available (Chrome/Android/Desktop)
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Also show buttons on Desktop if prompt triggers
+            installBtns.forEach(btn => {
+                if (btn) btn.style.display = (btn.id === 'btn-install-mobile') ? 'block' : 'inline-flex';
+            });
+        });
+
+        // 2. Always show button on Mobile or In-App Browsers (Force Show), BUT NOT if already standalone
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isInApp = /KAKAOTALK|NAVER/i.test(navigator.userAgent);
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+        if ((isMobile || isInApp) && !isStandalone) {
+            installBtns.forEach(btn => {
+                if (btn) btn.style.display = (btn.id === 'btn-install-mobile') ? 'block' : 'inline-flex';
+            });
+        }
+
+        // 3. Handle Click
+        installBtns.forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        // Automatic Prompt
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        deferredPrompt = null;
+                    } else {
+                        // Manual Guide (iOS, Naver, Kakao)
+                        let msg = '현재 브라우저에서는 자동 설치가 지원되지 않습니다.\n\n';
+                        msg += '원활한 설치를 위해 [Chrome] 또는 [삼성 인터넷] 브라우저에서 실행해 주세요.\n\n';
+
+                        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                            msg += '또는 하단의 [공유] 버튼 -> [홈 화면에 추가]를 선택해 주세요.';
+                        } else {
+                            msg += '또는 우측 하단/상단의 [메뉴] -> [홈 화면에 추가] (혹은 다른 브라우저로 열기)를 이용해 주세요.';
+                        }
+                        alert(msg);
+                    }
+                });
+            }
+        });
+
+        // Mobile Sidebar Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileSidebar = document.getElementById('mobileSidebar');
+        const mobileSidebarOverlay = document.getElementById('mobileSidebarOverlay');
+        const closeMobileSidebarBtn = document.getElementById('closeMobileSidebar');
+
+        function toggleMobileSidebar() {
+            mobileSidebar.classList.toggle('active');
+            mobileSidebarOverlay.classList.toggle('active');
+        }
+
+        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobileSidebar);
+        if (closeMobileSidebarBtn) closeMobileSidebarBtn.addEventListener('click', toggleMobileSidebar);
+        if (mobileSidebarOverlay) mobileSidebarOverlay.addEventListener('click', toggleMobileSidebar);
+
+        // Mobile Language Switching
+        const mobileLangBtns = document.querySelectorAll('.mobile-lang-btn');
+
+        // Function to update active state
+        function updateActiveMobileLang(lang) {
+            mobileLangBtns.forEach(btn => {
+                if (btn.dataset.lang === lang) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+
+        // Initialize active lang
+        const initialLang = localStorage.getItem('language') || 'ko';
+        updateActiveMobileLang(initialLang);
+
+        mobileLangBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lang = btn.dataset.lang;
+                // Assuming i18n.js exposes a changeLanguage function or we can reload
+                if (window.changeLanguage) {
+                    window.changeLanguage(lang);
+                } else {
+                    localStorage.setItem('language', lang);
+                    location.reload();
+                }
+                updateActiveMobileLang(lang);
+                // toggleMobileSidebar(); // Keep open or close? Let's keep open to show change
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/auth/status');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.loggedIn) {
+                        // User is logged in
+                        const authHeader = document.getElementById('auth-buttons-header');
+                        const authHero = document.getElementById('auth-buttons-hero');
+                        const dashHeader = document.getElementById('dashboard-button-header');
+                        const dashHero = document.getElementById('dashboard-button-hero');
+
+                        if (authHeader) authHeader.style.display = 'none';
+                        if (authHero) authHero.style.display = 'none';
+                        if (dashHeader) dashHeader.style.display = 'block';
+                        if (dashHero) dashHero.style.display = 'flex';
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to check auth status', e);
+            }
+        });
+    </script>
+</body>
+
+</html>

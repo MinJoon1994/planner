@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>개인정보 처리방침 - 도토리 플래너</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #f9f9f9;
+            /* 아주 연한 회색 배경 */
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            overflow-y: auto !important;
+            /* 스크롤 허용 */
+            height: auto !important;
+        }
+
+        /* Background Animation Wrapper - Keep HTML, but CSS is removed as per instruction */
+        .app-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .page-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.03);
+        }
+
+        /* The .policy-container styling is removed as per instruction,
+           and the .page-wrapper now handles the main container styling.
+           The HTML element with class 'policy-container' will still exist
+           but will not have specific styling from this block. */
+
+        .policy-header {
+            text-align: center;
+            margin-bottom: 50px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 30px;
+        }
+
+        .brand-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .brand-logo span {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: inherit;
+        }
+
+        .policy-header h1 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .last-updated {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .content {
+            color: #444;
+        }
+
+        .content h2 {
+            color: #1a1a1a;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .content p {
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+
+        .content ul {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .content li {
+            margin-bottom: 8px;
+            line-height: 1.7;
+            list-style-type: disc;
+            /* 기본 불렛 */
+        }
+
+        .content li::marker {
+            color: inherit;
+        }
+
+        .action-area {
+            margin-top: 60px;
+            text-align: center;
+            padding-top: 40px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 30px;
+            background: #6b4f3f;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(62, 39, 35, 0.3);
+            border: 2px solid #6b4f3f;
+        }
+
+        .btn-back:hover {
+            background: white;
+            color: #6b4f3f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(62, 39, 35, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .page-wrapper {
+                padding: 30px 20px;
+            }
+
+            .policy-header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background removed for cleaner look -->
+
+    <div class="page-wrapper">
+        <header class="policy-header">
+            <a href="/home.html" class="brand-logo">
+                <img src="/images/dotori_main.png" alt="logo" style="width: 32px;">
+                <span>도토리 플래너</span>
+            </a>
+            <h1 data-i18n="privacy-title">개인정보 처리방침</h1>
+            <span class="last-updated" data-i18n="last-updated">최종 수정일: 2026년 1월 2일</span>
+        </header>
+
+        <div class="content">
+            <p data-i18n="privacy-intro"></p>
+
+            <h2 data-i18n="privacy-h1"></h2>
+            <p data-i18n="privacy-desc1"></p>
+            <ul data-i18n="privacy-list1"></ul>
+
+            <h2 data-i18n="privacy-h2"></h2>
+            <p data-i18n="privacy-desc2"></p>
+            <ul data-i18n="privacy-list2"></ul>
+
+            <h2 data-i18n="privacy-h3"></h2>
+            <p data-i18n="privacy-desc3"></p>
+            <ul data-i18n="privacy-list3"></ul>
+
+            <h2 data-i18n="privacy-h4"></h2>
+            <p data-i18n="privacy-desc4"></p>
+
+            <h2 data-i18n="privacy-h5"></h2>
+            <p data-i18n="privacy-desc5"></p>
+        </div>
+
+        <div class="action-area">
+            <a href="/home.html" class="btn-back" data-i18n="btn-back-home">메인으로 돌아가기</a>
+        </div>
+    </div>
+    <script src="i18n.js"></script>
+</body>
+
+</html>

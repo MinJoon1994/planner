@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 대시보드 - 도토리 플래너</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --card-bg: #ffffff;
+            --primary-color: #6b4f3f;
+            --accent-color: #dcedc8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-primary);
+        }
+
+        .admin-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .back-link {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="admin-header">
+        <h1><i class="fa-solid fa-user-shield"></i> 관리자 대시보드</h1>
+        <a href="/index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> 서비스로 돌아가기</a>
+    </header>
+
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fa-solid fa-users stat-icon"></i>
+                <span class="stat-label">총 회원 수</span>
+                <span class="stat-value" id="total-users">-</span>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-wallet stat-icon"></i>
+                <span class="stat-label">총 가계부 수</span>
+                <span class="stat-value" id="total-groups">-</span>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-receipt stat-icon"></i>
+                <span class="stat-label">누적 거래량</span>
+                <span class="stat-value" id="total-tx">-</span>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-coins stat-icon"></i>
+                <span class="stat-label">총 거래 규모</span>
+                <span class="stat-value" id="total-volume">-</span>
+            </div>
+        </div>
+
+        <div class="stat-card" style="align-items: center; text-align: center; padding: 3rem;">
+            <i class="fa-solid fa-chart-line" style="font-size: 3rem; color: #ddd; margin-bottom: 1rem;"></i>
+            <h3 style="margin:0; color:var(--text-secondary);">상세 차트는 준비 중입니다.</h3>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+
+</html>
