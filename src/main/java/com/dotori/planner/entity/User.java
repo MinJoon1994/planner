@@ -44,6 +44,9 @@ public class User {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(nullable = true)
+    private Integer budgetStartDay = 1;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

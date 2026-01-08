@@ -346,6 +346,8 @@ body {
     font-family: var(--font-heading);
     color: var(--text-primary);
     white-space: nowrap;
+    text-align: center;
+    /* Center align header text */
 }
 
 .icon-btn {
@@ -423,7 +425,6 @@ body {
     backdrop-filter: blur(12px);
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-    /* Slightly stronger soft shadow */
 }
 
 .card {
@@ -515,7 +516,17 @@ body {
         display: none !important;
     }
 
-    /* Transform Tables to List Cards */
+    .glass-panel {
+        border-radius: 12px;
+        /* Soften radius for mobile */
+    }
+
+    .card {
+        padding: 0.5rem;
+        /* Maximize width for calendar */
+    }
+
+    /* Transform Tables */
     .view-section table,
     .view-section thead,
     .view-section tbody,
@@ -527,16 +538,13 @@ body {
 
     .table-container {
         overflow-x: hidden !important;
-        /* Disable scroll */
     }
 
     .tx-table {
         min-width: 0 !important;
-        /* Override the 500px force-scroll rule */
         width: 100% !important;
     }
 
-    /* Hide Table Header completely */
     .view-section thead tr {
         position: absolute;
         top: -9999px;
@@ -548,7 +556,6 @@ body {
         padding: 0.8rem 0;
         display: grid !important;
         grid-template-columns: 90px 1fr auto;
-        /* Date | Name/Desc | Amount */
         gap: 0.5rem;
         align-items: center;
     }
@@ -560,24 +567,59 @@ body {
         overflow: hidden;
         text-overflow: ellipsis;
         min-width: 0;
-        /* Critical for Grid 1fr truncation */
     }
 
-    /* Reduce padding on mobile to prevent cramping */
     .main-content {
-        padding: 1rem;
+        padding: 5px;
     }
 
-    /* --- Transactions Specific --- */
+    /* Maximize screen real estate */
+
+    /* Fix Calendar Mobile */
+    .calendar-wrapper {
+        width: 100%;
+        overflow: hidden;
+        /* Force fit */
+    }
+
+    .calendar-header,
+    .calendar-grid {
+        min-width: 0;
+        /* Allow shrinking */
+        width: 100%;
+    }
+
+    .calendar-day {
+        min-height: 80px;
+        padding: 1px;
+        /* Minimize internal padding */
+        overflow: hidden;
+        /* Clip overflows */
+    }
+
+    .day-num {
+        font-size: 0.75rem;
+        margin-bottom: 2px;
+    }
+
+    .calendar-day-total {
+        font-size: 0.55rem;
+        /* Tiny fonts for tiny screens */
+        white-space: nowrap;
+        letter-spacing: -1px;
+        /* Tighten spacing */
+        text-overflow: clip;
+        /* Just clip, don't ellipsis */
+    }
+
+    /* TX List specifics */
     #view-transactions .tx-table td:nth-child(1) {
-        /* Date */
         font-size: 0.8rem;
         color: var(--text-secondary);
         order: 1;
     }
 
     #view-transactions .tx-table td:nth-child(2) {
-        /* Desc */
         font-weight: 500;
         font-size: 0.95rem;
         order: 2;
@@ -587,9 +629,7 @@ body {
         display: none !important;
     }
 
-    /* Category */
     #view-transactions .tx-table td:nth-child(4) {
-        /* Amount */
         text-align: right;
         font-weight: 700;
         order: 3;
@@ -599,12 +639,8 @@ body {
         display: none !important;
     }
 
-    /* Actions */
-
-    /* --- Fixed Expenses Specific --- */
     #view-fixed-expenses .tx-table tr {
         grid-template-columns: auto 1fr auto;
-        /* Category | Name | Amount */
     }
 
     #view-fixed-expenses .tx-table td:nth-child(1) {
@@ -613,16 +649,13 @@ body {
         background: rgba(0, 0, 0, 0.05);
         border-radius: 4px;
         padding: 2px 6px !important;
-        height: fit-content;
         color: var(--text-secondary);
         order: 1;
-        min-width: 0;
         margin-right: 0.5rem;
+        width: auto;
     }
 
-    /* Category */
     #view-fixed-expenses .tx-table td:nth-child(2) {
-        /* Name */
         display: flex;
         align-items: center;
         font-weight: 500;
@@ -630,7 +663,6 @@ body {
     }
 
     #view-fixed-expenses .tx-table td:nth-child(3) {
-        /* Amount */
         text-align: right;
         font-weight: 600;
         order: 2;
@@ -639,13 +671,10 @@ body {
     #view-fixed-expenses .tx-table td:nth-child(4) {
         display: none !important;
     }
-
-    /* Actions */
 }
 
 .charts-row {
     grid-template-columns: 1fr;
-}
 }
 
 /* Donut Chart */
@@ -694,23 +723,17 @@ body {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    /* Space between for separate look */
     gap: 4px;
-    /* Small gap */
 }
 
 .chart-bar {
-    /* flex: 1; Removed flex to control width */
     width: 6px;
-    /* Thinner bars */
     background: rgba(85, 139, 47, 0.2);
-    /* Light Green bars */
     border-radius: 5px 5px 0 0;
     position: relative;
     transition: height 1s ease, background 0.2s;
     min-height: 5px;
     margin: 0 auto;
-    /* Center in its slot if we used grid, but flex justify space-between handles it */
 }
 
 .chart-bar:hover {
@@ -726,14 +749,11 @@ body {
     font-size: 10px;
     color: var(--text-secondary);
     display: none;
-    /* Hide standard day numbers to avoid clutter */
 }
 
 .chart-bar:nth-child(5n)::after {
     display: block;
 }
-
-/* Show every 5th day */
 
 /* Recent Transactions */
 .transaction-list-mini {
@@ -782,7 +802,8 @@ body {
     grid-template-columns: repeat(7, 1fr);
     background: rgba(139, 69, 19, 0.05);
     /* Light brown tint */
-    padding: 1rem;
+    padding: 1rem 0;
+    /* Remove side padding to align with grid */
     text-align: center;
     font-weight: 600;
     color: var(--text-secondary);
@@ -944,19 +965,69 @@ body {
     transition: border 0.3s;
 }
 
+/* Segmented Control (Toggle) */
+.segmented-control {
+    display: flex;
+    background: #e9ecef;
+    border-radius: 12px;
+    padding: 4px;
+    width: 100%;
+    position: relative;
+    user-select: none;
+}
+
+.segmented-control input[type="radio"] {
+    display: none;
+}
+
+.segmented-control label {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin: 0 !important;
+    /* Override form-group label margin */
+}
+
+.segmented-control input[type="radio"]:checked+label {
+    background: #ffffff;
+    color: var(--text-primary);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    font-weight: 600;
+}
+
+/* Filters */
 /* Filters */
 .list-filters {
     display: flex;
     gap: 0.8rem;
     margin-bottom: 1.2rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    /* Force single line */
+}
+
+.list-filters input {
+    flex: 1;
+    /* Search bar takes remaining space */
+    min-width: 0;
+    /* Allow shrinking */
+}
+
+.list-filters select {
+    width: auto;
+    flex: 0 0 auto;
+    /* Keep intrinsic width */
 }
 
 .list-filters input,
 .list-filters select {
     background: #ffffff;
     border: 1px solid #d7ccc8;
-    /* Light Brown styling */
     color: var(--text-primary);
     padding: 0.8rem 1.2rem;
     border-radius: 12px;

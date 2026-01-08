@@ -10,7 +10,8 @@ const state = {
     // Budget Groups
     budgetGroups: [],
     currentBudgetGroupId: null,
-    currentBudgetName: '로딩 중...'
+    currentBudgetName: '로딩 중...',
+    budgetStartDay: 1
 };
 
 // Constants
@@ -63,12 +64,12 @@ const elements = {
     // Charts & Lists
     chartContainer: document.getElementById('expense-trend-chart'),
     recentList: document.getElementById('recent-tx-list'),
-    fullList: document.getElementById('full-tx-list'),
+    fullList: document.getElementById('full-tx-list-ul'),
     calendarGrid: document.getElementById('calendar-grid'),
     viewAllBtn: document.getElementById('view-all-tx'),
 
     // Fixed Expenses View
-    fixedExpensesTableBody: document.getElementById('fixed-expenses-table-body'),
+    fixedExpensesTableBody: document.getElementById('fixed-expenses-list-ul'),
     fixedExpensesEmpty: document.getElementById('fixed-expenses-empty'),
     modalFixedList: document.getElementById('modal-fixed-list'),
 
@@ -97,7 +98,18 @@ const elements = {
 
     // Forms
     addTxForm: document.getElementById('add-tx-form'),
+    addTxForm: document.getElementById('add-tx-form'),
     budgetForm: document.getElementById('budget-form'),
+    analysisStartDate: document.getElementById('analysis-start-date'),
+    analysisEndDate: document.getElementById('analysis-end-date'),
+    btnRunAnalysis: document.getElementById('btn-run-analysis'),
+    analysisResults: document.getElementById('analysis-results'),
+    analysisTxList: document.getElementById('analysis-tx-list'),
+    analysisTotalIncome: document.getElementById('analysis-total-income'),
+    analysisTotalExpense: document.getElementById('analysis-total-expense'),
+    analysisBalance: document.getElementById('analysis-balance'),
+    analysisDonutChart: document.getElementById('analysis-donut-chart'),
+    analysisLegend: document.getElementById('analysis-legend'),
     fixedTxForm: document.getElementById('fixed-tx-form'),
 
     // Inputs
@@ -424,8 +436,6 @@ async function loadUserInfo() {
             state.membershipType = userInfo.membershipType || 'FREE';
 
             if (state.membershipType === 'PRO') {
-                badge.style.background = 'var(--accent-color)';
-                badge.style.color = 'white';
                 badge.textContent = 'PRO';
             } else {
                 badge.style.background = '#ccc';
@@ -443,6 +453,13 @@ async function loadUserInfo() {
                 }
             }
             document.getElementById('user-name').appendChild(badge);
+
+            // Set Budget Start Day
+            state.budgetStartDay = userInfo.budgetStartDay || 1;
+
+
+
+            updateMonthDisplay(); // Refresh display with range
 
             state.userRole = userInfo.role;
             if (elements.btnWriteNotice && (state.userRole === 'ROLE_ADMIN' || state.userRole === 'ADMIN')) {
@@ -508,12 +525,38 @@ function calculateSummary() {
     let totalIncomeTx = 0;
     let totalExpenseTx = 0;
 
+    // Define Range First
+    const year = state.currentDate.getFullYear();
+    const month = state.currentDate.getMonth();
+    const startDay = state.budgetStartDay || 1;
+
+    let startDate, endDate;
+    if (startDay === 1) {
+        startDate = new Date(year, month, 1);
+        endDate = new Date(year, month + 1, 0);
+    } else {
+        startDate = new Date(year, month, startDay);
+        endDate = new Date(year, month + 1, startDay - 1);
+    }
+    // Set hours for strict comparison
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Remaining Days Logic
+    let daysLeft = 0;
+
     state.transactions.forEach(tx => {
-        const amount = Number(tx.amount);
-        if (tx.type === 'INCOME') {
-            totalIncomeTx += amount;
-        } else {
-            totalExpenseTx += amount;
+        const tDate = new Date(tx.date);
+        if (tDate >= startDate && tDate <= endDate) {
+            const amount = Number(tx.amount);
+            if (tx.type === 'INCOME') {
+                totalIncomeTx += amount;
+            } else {
+                totalExpenseTx += amount;
+            }
         }
     });
 
@@ -522,19 +565,15 @@ function calculateSummary() {
     const disposableBudget = Math.max(0, totalAvailable - fixedSum);
     const remaining = disposableBudget - totalExpenseTx;
 
-    const year = state.currentDate.getFullYear();
-    const month = state.currentDate.getMonth();
-    const today = new Date();
-    const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
-
-    let daysLeft = 0;
-    if (isCurrentMonth) {
-        const lastDay = new Date(year, month + 1, 0).getDate();
-        daysLeft = Math.max(1, lastDay - today.getDate() + 1);
-    } else if (today < new Date(year, month, 1)) {
-        daysLeft = new Date(year, month + 1, 0).getDate();
-    } else {
+    if (today > endDate) {
         daysLeft = 0;
+    } else if (today < startDate) {
+        // Future (Viewing next month logic)
+        daysLeft = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+    } else {
+        // Active
+        const diffTime = endDate - today;
+        daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     }
 
     const daily = daysLeft > 0 && remaining > 0 ? Math.floor(remaining / daysLeft) : 0;
@@ -562,12 +601,34 @@ function renderAll() {
 }
 
 function updateMonthDisplay() {
+    let dateStr = '';
+
     if (window.i18n && window.i18n.formatMonthYear) {
-        elements.currentMonthDisplay.textContent = window.i18n.formatMonthYear(state.currentDate);
+        dateStr = window.i18n.formatMonthYear(state.currentDate);
     } else {
         const formatter = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long' });
-        elements.currentMonthDisplay.textContent = formatter.format(state.currentDate);
+        dateStr = formatter.format(state.currentDate);
     }
+
+    // Add Range Subtitle if budgetStartDay > 1
+    if (state.budgetStartDay > 1) {
+        // Updated Logic: "Jan settings" -> "Jan 25 ~ Feb 24"
+        const startDay = state.budgetStartDay;
+        const targetYear = state.currentDate.getFullYear();
+        const targetMonth = state.currentDate.getMonth();
+
+        const rangeStart = new Date(targetYear, targetMonth, startDay);
+        const rangeEnd = new Date(targetYear, targetMonth + 1, startDay - 1);
+
+        const sm = rangeStart.getMonth() + 1;
+        const sd = rangeStart.getDate();
+        const em = rangeEnd.getMonth() + 1;
+        const ed = rangeEnd.getDate();
+
+        dateStr += ` <span style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-top:4px; text-align:center;">(${sm}.${sd} ~ ${em}.${ed})</span>`;
+    }
+    elements.currentMonthDisplay.innerHTML = dateStr;
+
     const today = new Date();
     if (window.i18n && window.i18n.formatTodayLabel) {
         if (elements.todayDateText) elements.todayDateText.textContent = window.i18n.formatTodayLabel(today);
@@ -589,7 +650,7 @@ function renderDashboard() {
         if (window.i18n && window.i18n.formatDaysLeft) {
             elements.dailyDaysLeft.textContent = window.i18n.formatDaysLeft(summary.daysLeft);
         } else {
-            if (summary.daysLeft > 0) elements.dailyDaysLeft.textContent = `(남은 ${summary.daysLeft}일 기준)`;
+            if (summary.daysLeft > 0) elements.dailyDaysLeft.textContent = `(${summary.daysLeft}일 남음)`;
             else elements.dailyDaysLeft.textContent = `(기간 종료)`;
         }
     }
@@ -735,29 +796,22 @@ function renderTransactions() {
         const sign = tx.type === 'INCOME' ? '+' : '-';
         const colorStyle = tx.type === 'INCOME' ? 'color:#2E7D32; font-weight:700;' : 'color:#C62828; font-weight:700;';
         return `
-        <tr class="tx-row" onclick="openEditModal(${tx.id})" style="cursor: pointer;">
-            <td>${new Date(tx.date).toLocaleDateString('ko-KR')}</td>
-            <td>${tx.description}</td>
-            <td><span class="badge category-${tx.category}">${convertCategory(tx.category)}</span></td>
-            <td style="${colorStyle}">
+        <li onclick="openEditModal(${tx.id})" style="cursor: pointer;">
+            <div class="tx-info">
+                <h4>${tx.description}</h4>
+                <span>${new Date(tx.date).toLocaleDateString('ko-KR')} · ${convertCategory(tx.category)}</span>
+            </div>
+            <div class="tx-amount" style="${colorStyle}">
                 ${sign}${formatCurrency(tx.amount)}
-                <span style="font-size:0.8rem; margin-left:4px;" title="${tx.paymentMethod === 'CASH' ? '현금' : '카드'}">
+                <span style="font-size:0.8rem; margin-left:4px; font-weight:normal; color:#999;" title="${tx.paymentMethod === 'CASH' ? '현금' : '카드'}">
                     ${tx.paymentMethod === 'CASH' ? '💵' : '💳'}
                 </span>
-            </td>
-            <td>
-                <button class="edit-btn" onclick="event.stopPropagation(); openEditModal(${tx.id})" style="margin-right:0.5rem; color:var(--text-secondary); background:none; border:none; cursor:pointer;" title="수정">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </button>
-                <button class="delete-btn" onclick="event.stopPropagation(); deleteTransaction(${tx.id})" title="삭제">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </td>
-        </tr>
+            </div>
+        </li>
     `}).join('');
 
     if (txs.length === 0) {
-        elements.fullList.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem; color: var(--text-secondary);">내역이 없습니다.</td></tr>';
+        elements.fullList.innerHTML = '<li style="justify-content:center; padding: 2rem; color: var(--text-secondary);">내역이 없습니다.</li>';
     }
 }
 
@@ -796,18 +850,27 @@ function renderCalendar() {
         if (expenseTotal > 0) {
             const totalDisplay = document.createElement('span');
             totalDisplay.className = 'calendar-day-total';
-            if (expenseTotal >= 10000) totalDisplay.textContent = `-${(expenseTotal / 10000).toFixed(1)}만`;
-            else totalDisplay.textContent = `-${expenseTotal.toLocaleString()}`;
+            if (expenseTotal >= 10000) {
+                const val = parseFloat((expenseTotal / 10000).toFixed(1)); // 42.0 -> 42, 4.3 -> 4.3
+                totalDisplay.textContent = `-${val}만`;
+            } else {
+                totalDisplay.textContent = `-${expenseTotal.toLocaleString()}`;
+            }
             infoDiv.appendChild(totalDisplay);
         }
 
         if (incomeTotal > 0) {
             const incomeDisplay = document.createElement('span');
-            incomeDisplay.style.fontSize = '0.7rem';
+            // Use same class for layout consistency if desired, or keep inline styles
+            incomeDisplay.className = 'calendar-day-total';
             incomeDisplay.style.color = '#2E7D32';
-            incomeDisplay.style.fontWeight = '700';
-            incomeDisplay.style.whiteSpace = 'nowrap';
-            incomeDisplay.textContent = `+${(incomeTotal / 10000).toFixed(0)}만`;
+
+            if (incomeTotal >= 10000) {
+                const val = parseFloat((incomeTotal / 10000).toFixed(1));
+                incomeDisplay.textContent = `+${val}만`;
+            } else {
+                incomeDisplay.textContent = `+${incomeTotal.toLocaleString()}`;
+            }
             infoDiv.appendChild(incomeDisplay);
         }
 
@@ -917,21 +980,18 @@ function renderFixedExpensesView() {
     } else {
         if (elements.fixedExpensesEmpty) elements.fixedExpensesEmpty.style.display = 'none';
         elements.fixedExpensesTableBody.innerHTML = fixedList.map((item, index) => `
-            <tr onclick="openFixedEditModal(${index})" style="cursor: pointer;">
-                <td>${convertFixedCategory(item.category)}</td>
-                <td>${item.name}</td>
-                <td>
+            <li onclick="openFixedEditModal(${index})" style="cursor: pointer;">
+                <div class="tx-info">
+                    <h4>${item.name}</h4>
+                    <span>${convertFixedCategory(item.category)}</span>
+                </div>
+                <div class="tx-amount">
                     ${formatCurrency(item.amount)}
-                    <span style="font-size:0.8rem; margin-left:4px;" title="${item.paymentMethod === 'CASH' ? '현금' : '카드'}">
+                    <span style="font-size:0.8rem; margin-left:4px; font-weight:normal; color:#999;" title="${item.paymentMethod === 'CASH' ? '현금' : '카드'}">
                         ${item.paymentMethod === 'CASH' ? '💵' : '💳'}
                     </span>
-                </td>
-                <td>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteFixedExpense(${index})" title="삭제">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
+                </div>
+            </li>
         `).join('');
     }
 }
@@ -968,6 +1028,17 @@ window.openFixedEditModal = function (index) {
     if (elements.modalFixedList) elements.modalFixedList.style.display = 'none';
     const copyBtn = document.getElementById('btn-copy-prev-fixed');
     if (copyBtn) copyBtn.style.display = 'none';
+
+    // Show Delete Button
+    const delBtn = document.getElementById('btn-delete-fixed');
+    if (delBtn) {
+        delBtn.style.display = 'flex';
+        delBtn.onclick = async () => {
+            if (await deleteFixedExpense(state.editingFixedIndex)) {
+                elements.fixedModal.classList.remove('open');
+            }
+        };
+    }
 
     elements.fixedModal.classList.add('open');
 }
@@ -1036,11 +1107,12 @@ window.deleteTransaction = async function (id) {
 }
 
 window.deleteFixedExpense = async function (index) {
-    if (!confirm('이 고정 지출 항목을 삭제하시겠습니까?')) return;
+    if (!confirm('이 고정 지출 항목을 삭제하시겠습니까?')) return false;
     const currentBudget = state.currentBudget;
     const updatedFixed = [...currentBudget.fixed];
     updatedFixed.splice(index, 1);
-    await updateBudgetOnServer(currentBudget.total, updatedFixed);
+    const result = await updateBudgetOnServer(currentBudget.total, updatedFixed);
+    return result;
 }
 
 async function updateBudgetOnServer(totalAmount, fixedExpenses) {
@@ -1114,6 +1186,21 @@ window.openEditModal = function (id) {
 }
 
 function switchToTab(tabId) {
+    if (tabId === 'analysis') {
+        if (state.membershipType !== 'PRO') {
+            upgradeToPro();
+            return;
+        }
+        // Default dates: Current Month
+        if (elements.analysisStartDate && !elements.analysisStartDate.value) {
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            const offset = new Date().getTimezoneOffset() * 60000;
+            elements.analysisStartDate.valueAsDate = new Date(firstDay - offset);
+            elements.analysisEndDate.valueAsDate = new Date(now - offset);
+        }
+    }
+
     elements.navLinks.forEach(l => {
         if (l.getAttribute('data-tab') === tabId) l.classList.add('active');
         else l.classList.remove('active');
@@ -1129,6 +1216,8 @@ function switchToTab(tabId) {
 }
 
 function setupEventListeners() {
+    populateFilterSelect();
+
     if (elements.txAmount) elements.txAmount.addEventListener('input', formatInputNumber);
     if (elements.budgetInput) elements.budgetInput.addEventListener('input', formatInputNumber);
     if (elements.newFixedAmount) elements.newFixedAmount.addEventListener('input', formatInputNumber);
@@ -1166,7 +1255,38 @@ function setupEventListeners() {
 
     if (elements.btnWriteNotice) {
         elements.btnWriteNotice.addEventListener('click', () => {
+            elements.noticeForm.reset();
             elements.noticeModal.classList.add('open');
+        });
+    }
+
+    // Settings
+    if (elements.openSettingsBtn) {
+        elements.openSettingsBtn.addEventListener('click', () => {
+            if (elements.settingStartDay) elements.settingStartDay.value = state.budgetStartDay;
+            elements.settingsModal.classList.add('open');
+        });
+    }
+
+    if (elements.settingsForm) {
+        elements.settingsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const day = parseInt(elements.settingStartDay.value);
+            if (day < 1 || day > 31) return alert('1~31 사이의 숫자를 입력해주세요.');
+
+            try {
+                const res = await fetch('/api/user/settings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ budgetStartDay: day })
+                });
+                if (res.ok) {
+                    alert('저장되었습니다.');
+                    location.reload();
+                } else {
+                    alert('저장 실패');
+                }
+            } catch (err) { alert('오류: ' + err); }
         });
     }
     if (elements.noticeForm) elements.noticeForm.addEventListener('submit', saveNotice);
@@ -1209,6 +1329,9 @@ function setupEventListeners() {
     elements.openBudgetBtn.addEventListener('click', () => {
         const total = state.currentBudget.total;
         elements.budgetInput.value = total ? total.toLocaleString('ko-KR') : '';
+        if (document.getElementById('budget-start-day-input')) {
+            document.getElementById('budget-start-day-input').value = state.budgetStartDay || 1;
+        }
         if (elements.previewTotalBudget) elements.previewTotalBudget.textContent = formatCurrency(total);
         elements.budgetModal.classList.add('open');
     });
@@ -1229,6 +1352,8 @@ function setupEventListeners() {
             if (elements.modalFixedList) elements.modalFixedList.style.display = 'block';
             const copyBtn = document.getElementById('btn-copy-prev-fixed');
             if (copyBtn) copyBtn.style.display = 'inline-block';
+            const delBtn = document.getElementById('btn-delete-fixed');
+            if (delBtn) delBtn.style.display = 'none';
 
             renderModalFixedList();
             elements.fixedModal.classList.add('open');
@@ -1379,10 +1504,28 @@ function setupEventListeners() {
     elements.budgetForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const totalAmount = parseNumberInput(elements.budgetInput.value);
+
+        // Save Settings (Start Day) first
+        const startDayInput = document.getElementById('budget-start-day-input');
+        if (startDayInput) {
+            const day = parseInt(startDayInput.value);
+            if (day >= 1 && day <= 31) {
+                try {
+                    await fetch('/api/user/settings', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ budgetStartDay: day })
+                    });
+                    state.budgetStartDay = day;
+                } catch (err) { console.error("Failed to save start day", err); }
+            }
+        }
+
         const fixedExpenses = state.currentBudget.fixed || [];
         const success = await updateBudgetOnServer(totalAmount, fixedExpenses);
         if (success) {
             elements.budgetModal.classList.remove('open');
+            location.reload(); // Reload to re-calc everything with new cycle
         }
     });
 
@@ -1464,47 +1607,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// PWA Install Prompt
-let deferredPrompt;
-const installArea = document.getElementById('pwa-install-area');
-const installBtn = document.getElementById('btn-install-app');
-
-// 1. Capture event
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-});
-
-// 2. Always show button on Mobile/In-App, BUT NOT if already standalone
-const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-const isInApp = /KAKAOTALK|NAVER/i.test(navigator.userAgent);
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-
-if ((isMobile || isInApp) && !isStandalone && installArea) {
-    installArea.style.display = 'block';
-}
-
-if (installBtn) {
-    installBtn.addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            deferredPrompt = null;
-            // hide button if installed? Optional.
-        } else {
-            // Manual Guide
-            let msg = '현재 브라우저에서는 자동 설치가 지원되지 않습니다.\n\n';
-            msg += '원활한 설치를 위해 [Chrome] 또는 [삼성 인터넷] 브라우저에서 실행해 주세요.\n\n';
-
-            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                msg += '또는 하단의 [공유] 버튼 -> [홈 화면에 추가]를 선택해 주세요.';
-            } else {
-                msg += '또는 우측 하단/상단의 [메뉴] -> [홈 화면에 추가] (혹은 다른 브라우저로 열기)를 이용해 주세요.';
-            }
-            alert(msg);
-        }
-    });
-}
+// PWA Install Logic removed (Button deleted from Sidebar)
 
 /* Notices Logic */
 async function renderNotices() {
@@ -1597,4 +1700,150 @@ window.deleteNotice = async function (id) {
     } catch (e) { alert('삭제 실패: ' + e); }
 };
 
+function renderDonutChart(txs, donutEl, legendEl) {
+    if (!donutEl || !legendEl) return;
+    const expenses = txs.filter(t => t.type !== 'INCOME');
+    if (expenses.length === 0) {
+        donutEl.style.background = '#f5f5f5';
+        legendEl.innerHTML = '<span style="color:var(--text-secondary); font-size:0.8rem;">지출 없음</span>';
+        return;
+    }
+    const totals = {};
+    let grandTotal = 0;
+    expenses.forEach(tx => {
+        const cat = tx.category || 'other';
+        totals[cat] = (totals[cat] || 0) + Number(tx.amount);
+        grandTotal += Number(tx.amount);
+    });
+    const sortedCats = Object.keys(totals).sort((a, b) => totals[b] - totals[a]);
+    let conic = '';
+    let startDeg = 0;
+    legendEl.innerHTML = '';
+
+    // Safety check for CATEGORY_COLORS
+    const colors = (typeof CATEGORY_COLORS !== 'undefined') ? CATEGORY_COLORS : {};
+
+    sortedCats.forEach(cat => {
+        const amt = totals[cat];
+        const pct = (amt / grandTotal) * 100;
+        const deg = (amt / grandTotal) * 360;
+        const endDeg = startDeg + deg;
+        const color = colors[cat] || '#999';
+        conic += `${color} ${startDeg}deg ${endDeg}deg, `;
+        startDeg = endDeg;
+        const item = document.createElement('div');
+        item.className = 'donut-legend-item';
+        const labelText = (window.i18n && window.i18n.t && window.i18n.t(`category-${cat}`)) || cat;
+        item.innerHTML = `<div class="donut-legend-color" style="background:${color}"></div>${labelText} ${Math.round(pct)}%`;
+        legendEl.appendChild(item);
+    });
+    conic = conic.slice(0, -2);
+    donutEl.style.background = `conic-gradient(${conic})`;
+}
+
+async function runAnalysis() {
+    if (!elements.analysisStartDate || !elements.analysisEndDate) return;
+    const start = elements.analysisStartDate.value;
+    const end = elements.analysisEndDate.value;
+    if (!start || !end) return alert('날짜를 선택해주세요.');
+    if (new Date(start) > new Date(end)) return alert('시작일이 종료일보다 늦을 수 없습니다.');
+
+    try {
+        elements.btnRunAnalysis.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        const bgParam = state.currentBudgetGroupId ? `&budgetGroupId=${state.currentBudgetGroupId}` : '';
+        const res = await fetch(`/api/transactions/range?startDate=${start}&endDate=${end}${bgParam}`);
+        if (!res.ok) throw new Error('Failed');
+        const txs = await res.json();
+
+        elements.analysisResults.style.display = 'block';
+        elements.btnRunAnalysis.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> 조회';
+
+        // Summary
+        let inc = 0, exp = 0;
+        txs.forEach(t => {
+            if (t.type === 'INCOME') inc += t.amount;
+            else exp += t.amount;
+        });
+        if (elements.analysisTotalIncome) elements.analysisTotalIncome.textContent = formatCurrency(inc);
+        if (elements.analysisTotalExpense) elements.analysisTotalExpense.textContent = formatCurrency(exp);
+        if (elements.analysisBalance) elements.analysisBalance.textContent = formatCurrency(inc - exp);
+
+        renderDonutChart(txs, elements.analysisDonutChart, elements.analysisLegend);
+
+        if (elements.analysisTxList) {
+            elements.analysisTxList.innerHTML = txs.map(tx => {
+                const isInc = tx.type === 'INCOME';
+                const sign = isInc ? '+' : '-';
+                const color = isInc ? 'var(--income-color)' : 'var(--expense-color)';
+                const catLabel = (window.i18n && window.i18n.t && window.i18n.t(`category-${tx.category}`)) || tx.category;
+
+                return `
+                <li class="transaction-item" style="display:flex; justify-content:space-between; padding:0.8rem; border-bottom:1px solid var(--glass-border);">
+                    <div style="display:flex; flex-direction:column;">
+                        <span style="font-weight:500;">${tx.description}</span>
+                        <span style="font-size:0.8rem; color:var(--text-secondary);">${new Date(tx.date).toLocaleDateString()} · ${catLabel}</span>
+                    </div>
+                    <span style="font-weight:bold; color:${color};">${sign}${formatCurrency(tx.amount)}</span>
+                </li>`;
+            }).join('');
+        }
+
+    } catch (e) {
+        console.error(e);
+        alert('조회 실패');
+        elements.btnRunAnalysis.innerHTML = '조회';
+    }
+}
+
+if (elements.btnRunAnalysis) elements.btnRunAnalysis.addEventListener('click', runAnalysis);
+
+function populateFilterSelect() {
+    const select = document.querySelector('.category-select');
+    if (!select) return;
+
+    // Reset keeping first option
+    select.innerHTML = '<option value="all" data-i18n="filter-all-categories">모든 카테고리</option>';
+
+    try {
+        const expGroup = document.createElement('optgroup');
+        expGroup.label = "지출";
+        // Directly access global constant
+        EXPENSE_CATEGORIES.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.value;
+            opt.textContent = cat.label;
+            // Use translation if available, fallback to label
+            if (window.i18n && window.i18n.t) {
+                const translated = window.i18n.t(`category-${cat.value}`);
+                if (translated) opt.textContent = translated;
+            }
+            opt.setAttribute('data-i18n', `category-${cat.value}`);
+            expGroup.appendChild(opt);
+        });
+        select.appendChild(expGroup);
+
+        const incGroup = document.createElement('optgroup');
+        incGroup.label = "수입";
+        INCOME_CATEGORIES.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.value;
+            opt.textContent = cat.label;
+            if (window.i18n && window.i18n.t) {
+                const translated = window.i18n.t(`category-${cat.value}`);
+                if (translated) opt.textContent = translated;
+            }
+            opt.setAttribute('data-i18n', `category-${cat.value}`);
+            incGroup.appendChild(opt);
+        });
+        select.appendChild(incGroup);
+    } catch (e) {
+        console.error("Error populating categories", e);
+    }
+}
+
+// Prepare Init
 document.addEventListener('DOMContentLoaded', init);
+
+// Force run immediately in case DOMContentLoaded already passed (rare but possible w/ defer)
+// or just to ensure it runs.
+populateFilterSelect();

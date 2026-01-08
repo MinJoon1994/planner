@@ -39,8 +39,29 @@ public class UserController {
         userInfo.setProfileImage("🐿️"); // 기본 다람쥐 이모지
         userInfo.setRole(user.getRole());
         userInfo.setMembershipType(user.getMembershipType().toString());
+        userInfo.setBudgetStartDay(user.getBudgetStartDay());
 
         return ResponseEntity.ok(userInfo);
+    }
+
+    @PutMapping("/settings")
+    public ResponseEntity<?> updateSettings(@RequestBody Map<String, Object> settings) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (settings.containsKey("budgetStartDay")) {
+            int day = Integer.parseInt(settings.get("budgetStartDay").toString());
+            // Validate day (1-31)
+            if (day < 1 || day > 31) {
+                return ResponseEntity.badRequest().body("Invalid day");
+            }
+            user.setBudgetStartDay(day);
+        }
+
+        userRepository.save(user);
+        return ResponseEntity.ok(Map.of("message", "Settings updated"));
     }
 }
 
@@ -51,4 +72,5 @@ class UserInfoDTO {
     private String profileImage;
     private String role;
     private String membershipType;
+    private Integer budgetStartDay;
 }

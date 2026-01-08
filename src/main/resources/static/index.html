@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=3">
     <link rel="manifest" href="manifest.json?v=2">
 </head>
 
@@ -92,14 +92,13 @@
                     <i class="fa-solid fa-bullhorn"></i>
                     <span data-i18n="nav-notices">공지사항</span>
                 </li>
+                <li data-tab="analysis">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span data-i18n="nav-analysis">상세 분석</span>
+                </li>
             </ul>
 
-            <div id="pwa-install-area" style="padding: 0 1rem; margin-bottom: 1rem; display: none;">
-                <button id="btn-install-app" class="btn-upgrade-sidebar"
-                    style="background: var(--text-primary); color: var(--glass-bg);">
-                    <i class="fa-solid fa-download"></i> <span data-i18n="btn-install-app">앱 설치하기</span>
-                </button>
-            </div>
+
 
             <div class="user-profile">
                 <div class="avatar" id="user-avatar">
@@ -243,19 +242,9 @@
                         <h3 data-i18n="title-fixed-expenses">고정 지출 관리</h3>
                     </div>
                     <div class="table-container">
-                        <table class="tx-table">
-                            <thead>
-                                <tr>
-                                    <th data-i18n="table-category">카테고리</th>
-                                    <th data-i18n="table-fixed-name">항목명</th>
-                                    <th data-i18n="table-amount">금액</th>
-                                    <th data-i18n="table-actions">관리</th>
-                                </tr>
-                            </thead>
-                            <tbody id="fixed-expenses-table-body">
-                                <!-- Rows injected via JS -->
-                            </tbody>
-                        </table>
+                        <ul class="transaction-list-mini" id="fixed-expenses-list-ul">
+                            <!-- Items injected via JS -->
+                        </ul>
                         <div id="fixed-expenses-empty"
                             style="text-align: center; padding: 2rem; color: var(--text-secondary); display: none;">
                             등록된 고정 지출이 없습니다.
@@ -288,30 +277,14 @@
                     <div class="list-filters">
                         <input type="text" data-i18n-placeholder="search-placeholder" placeholder="내역 검색..."
                             class="search-input">
-                        <select class="category-select">
-                            <option value="all" data-i18n="filter-all-categories">모든 카테고리</option>
-                            <option value="food" data-i18n="category-food">식비</option>
-                            <option value="transport" data-i18n="category-transport">교통</option>
-                            <option value="shopping" data-i18n="category-shopping">쇼핑</option>
-                            <option value="bills" data-i18n="category-bills">공과금</option>
-                            <option value="other" data-i18n="category-other">기타</option>
+                        <select class="category-select" data-i18n-label="filter-all-categories">
+                            <option value="all">모든 카테고리</option>
                         </select>
                     </div>
                     <div class="table-container">
-                        <table class="tx-table">
-                            <thead>
-                                <tr>
-                                    <th data-i18n="table-date">날짜</th>
-                                    <th data-i18n="table-description">내용</th>
-                                    <th data-i18n="table-category">카테고리</th>
-                                    <th data-i18n="table-amount">금액</th>
-                                    <th data-i18n="table-actions">관리</th>
-                                </tr>
-                            </thead>
-                            <tbody id="full-tx-list">
-                                <!-- Rows injected via JS -->
-                            </tbody>
-                        </table>
+                        <ul class="transaction-list-mini" id="full-tx-list-ul">
+                            <!-- Items injected via JS -->
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -327,6 +300,77 @@
                     <div id="notice-list-container" class="notice-list"
                         style="display: flex; flex-direction: column; gap: 1rem;">
                         <!-- Injected JS -->
+                    </div>
+                </div>
+            </div>
+            <!-- Analysis View -->
+            <div id="view-analysis" class="view-section">
+                <div class="card glass-panel" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h3>기간 상세 분석</h3>
+                    </div>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; margin-top: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 140px;">
+                            <label>시작일</label>
+                            <input type="date" id="analysis-start-date">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 140px;">
+                            <label>종료일</label>
+                            <input type="date" id="analysis-end-date">
+                        </div>
+                        <button id="btn-run-analysis" class="btn btn-primary" style="height: 48px; min-width: 100px;">
+                            <i class="fa-solid fa-magnifying-glass"></i> 조회
+                        </button>
+                    </div>
+                </div>
+
+                <div id="analysis-results" style="display: none;">
+                    <div class="summary-cards">
+                        <div class="card glass-panel summary-card total" style="flex:1;">
+                            <div class="card-info">
+                                <h3>총 수입</h3>
+                                <p id="analysis-total-income" style="color:var(--income-color);">0</p>
+                            </div>
+                        </div>
+                        <div class="card glass-panel summary-card spent" style="flex:1;">
+                            <div class="card-info">
+                                <h3>총 지출</h3>
+                                <p id="analysis-total-expense" style="color:var(--expense-color);">0</p>
+                            </div>
+                        </div>
+                        <div class="card glass-panel summary-card remaining" style="flex:1;">
+                            <div class="card-info">
+                                <h3>차액</h3>
+                                <p id="analysis-balance">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="charts-row" style="margin-top:2rem;">
+                        <div class="card glass-panel category-chart-card" style="width:100%; max-width:100%;">
+                            <div class="card-header">
+                                <h3>카테고리별 지출 (기간)</h3>
+                            </div>
+                            <div style="height:300px; display:flex; justify-content:center; align-items:center;">
+                                <div id="analysis-donut-container"
+                                    style="width: 250px; height: 250px; position: relative;">
+                                    <div id="analysis-donut-chart" style="width:100%; height:100%; border-radius:50%;">
+                                    </div>
+                                    <div
+                                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; height: 60%; background: var(--glass-bg); border-radius: 50%; box-shadow: inset 0 0 10px rgba(0,0,0,0.05);">
+                                    </div>
+                                </div>
+                                <div id="analysis-legend"
+                                    style="margin-left: 2rem; display: flex; flex-direction: column; gap: 8px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card glass-panel full-list-card" style="margin-top:2rem;">
+                        <div class="card-header">
+                            <h3>내역 목록</h3>
+                        </div>
+                        <ul class="transaction-list-mini" id="analysis-tx-list"></ul>
                     </div>
                 </div>
             </div>
@@ -421,13 +465,12 @@
                 <!-- Payment Method -->
                 <div class="form-group" id="tx-method-group">
                     <label>결제 수단</label>
-                    <div style="display: flex; gap: 1rem;">
-                        <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer; font-size:0.9rem;">
-                            <input type="radio" name="tx-method" value="CARD" checked> 💳 카드
-                        </label>
-                        <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer; font-size:0.9rem;">
-                            <input type="radio" name="tx-method" value="CASH"> 💵 현금
-                        </label>
+                    <div class="segmented-control">
+                        <input type="radio" name="tx-method" id="tx-method-card" value="CARD" checked>
+                        <label for="tx-method-card">카드</label>
+
+                        <input type="radio" name="tx-method" id="tx-method-cash" value="CASH">
+                        <label for="tx-method-cash">현금</label>
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 1rem; align-items: center;">
@@ -483,16 +526,22 @@
                 <!-- Fixed Payment Method -->
                 <div class="form-group">
                     <label>결제 수단</label>
-                    <div style="display: flex; gap: 1rem;">
-                        <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer; font-size:0.9rem;">
-                            <input type="radio" name="fixed-method" value="CARD" checked> 💳 카드
-                        </label>
-                        <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer; font-size:0.9rem;">
-                            <input type="radio" name="fixed-method" value="CASH"> 💵 현금
-                        </label>
+                    <div class="segmented-control">
+                        <input type="radio" name="fixed-method" id="fixed-method-card" value="CARD" checked>
+                        <label for="fixed-method-card">카드</label>
+
+                        <input type="radio" name="fixed-method" id="fixed-method-cash" value="CASH">
+                        <label for="fixed-method-cash">현금</label>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary full-width" data-i18n="btn-add">추가하기</button>
+                <div style="display: flex; gap: 10px; margin-top: 1rem; align-items: center;">
+                    <button type="button" id="btn-delete-fixed" class="btn"
+                        style="background:var(--danger-color); color:white; display:none; flex:1; height:48px; display:flex; align-items:center; justify-content:center; margin:0;"
+                        data-i18n="btn-delete">삭제</button>
+                    <button type="submit" class="btn btn-primary full-width"
+                        style="flex:3; height:48px; display:flex; align-items:center; justify-content:center; margin:0;"
+                        data-i18n="btn-add">추가하기</button>
+                </div>
             </form>
         </div>
     </div>
@@ -528,6 +577,19 @@
                 <div class="form-group">
                     <label data-i18n="label-total-budget">월 총 예산 (수입)</label>
                     <input type="text" id="budget-input" placeholder="예: 2,000,000" inputmode="numeric" required>
+                </div>
+
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label>가계부 시작일 설정</label>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <span style="font-size:0.9rem;">매월</span>
+                        <input type="number" id="budget-start-day-input" min="1" max="31" value="1"
+                            style="width:60px; padding:0.6rem; border-radius:8px; border:1px solid var(--glass-border); text-align:center;">
+                        <span style="font-size:0.9rem;">일에 시작</span>
+                    </div>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.4rem;">
+                        (예: 25일로 설정 시, 이번 달 25일 ~ 다음 달 24일까지를 한 달로 관리합니다)
+                    </p>
                 </div>
 
                 <div class="summary-preview"
@@ -583,8 +645,8 @@
         </div>
     </div>
 
-    <script src="i18n.js"></script>
-    <script src="app.js"></script>
+    <script src="i18n.js?v=4"></script>
+    <script src="app.js?v=4"></script>
 </body>
 
 </html>

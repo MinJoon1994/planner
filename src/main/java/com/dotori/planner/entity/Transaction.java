@@ -11,7 +11,10 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "transactions")
+@Table(name = "transactions", indexes = {
+        @Index(name = "idx_tx_group_date", columnList = "budget_group_id, date"),
+        @Index(name = "idx_tx_user_date", columnList = "user_id, date")
+})
 @Getter
 @Setter
 @NoArgsConstructor

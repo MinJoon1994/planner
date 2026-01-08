@@ -132,9 +132,49 @@ public class PlannerController {
         User currentUser = getCurrentUser();
         BudgetGroup group = getBudgetGroup(currentUser, budgetGroupId);
 
-        LocalDate startDate = LocalDate.of(year, month, 1);
-        LocalDate endDate = YearMonth.of(year, month).atEndOfMonth();
-        return transactionRepository.findByBudgetGroupIdAndDateBetween(group.getId(), startDate, endDate);
+        int startDay = currentUser.getBudgetStartDay() != null ? currentUser.getBudgetStartDay() : 1;
+        LocalDate calendarStart = LocalDate.of(year, month, 1);
+        LocalDate calendarEnd = YearMonth.of(year, month).atEndOfMonth();
+
+        LocalDate budgetStart, budgetEnd;
+
+        if (startDay == 1) {
+            budgetStart = calendarStart;
+            budgetEnd = calendarEnd;
+        } else {
+            // Updated Logic: User wants "Jan Budget" to start on "Jan 25".
+            LocalDate targetMonthStart = LocalDate.of(year, month, 1);
+            int safeStartDay = Math.min(startDay, targetMonthStart.lengthOfMonth());
+            budgetStart = targetMonthStart.withDayOfMonth(safeStartDay);
+            budgetEnd = budgetStart.plusMonths(1).minusDays(1);
+        }
+
+        // Return UNION of Calendar Range (for Planner View) and Budget Range (for
+        // Calculation)
+        // E.g. Jan 25~Feb 24 Cycle + Jan 1~31 Calendar => Jan 1 ~ Feb 24.
+        LocalDate queryStart = calendarStart.isBefore(budgetStart) ? calendarStart : budgetStart;
+        LocalDate queryEnd = calendarEnd.isAfter(budgetEnd) ? calendarEnd : budgetEnd;
+
+        return transactionRepository.findByBudgetGroupIdAndDateBetween(group.getId(), queryStart, queryEnd);
+
+    }
+
+    @GetMapping("/transactions/range")
+    public List<Transaction> getTransactionsRange(@RequestParam String startDate, @RequestParam String endDate,
+            @RequestParam(required = false) Long budgetGroupId) {
+        User user = getCurrentUser();
+        if (user.getMembershipType() != User.MembershipType.PRO) {
+            throw new RuntimeException("REQUIRE_PRO");
+        }
+
+        BudgetGroup group = getBudgetGroup(user, budgetGroupId);
+        try {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+            return transactionRepository.findByBudgetGroupIdAndDateBetween(group.getId(), start, end);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid Date Format");
+        }
     }
 
     @PostMapping("/transactions")
